@@ -1,0 +1,6 @@
+{
+  "name": "Multilingual QR Menu",
+  "description": "A professional QR menu supporting English, Arabic, and Kurdish Sorani with instant translation, automatic layout switching and an admin panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
