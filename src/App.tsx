@@ -13,6 +13,15 @@ import {
   saveMenuItems,
   saveRestaurantSettings
 } from "./db";
+import { onSnapshot, collection, doc } from "firebase/firestore";
+import { 
+  db, 
+  dbSyncCategories, 
+  dbSyncMenuItems, 
+  dbSaveSettings, 
+  dbUploadAllIfEmpty, 
+  testConnection 
+} from "./firebase";
 import i18n from "./i18n"; // Import i18n instance
 import WelcomeLanguageModal from "./components/WelcomeLanguageModal";
 import QRCodeModal from "./components/QRCodeModal";
@@ -71,6 +80,60 @@ export default function App() {
     document.body.style.fontFamily = config.fontFamily;
   }, [currentLang]);
 
+  // Connect to Firebase and establish safe real-time snapshot synchronization
+  useEffect(() => {
+    testConnection();
+
+    // In case the Firestore project is completely empty on first visit, bootstrap
+    // the database by copying the current localStorage / default values.
+    dbUploadAllIfEmpty(categories, menuItems, settings);
+
+    // Dynamic real-time categories collection listener
+    const unsubCats = onSnapshot(collection(db, "categories"), (snapshot) => {
+      if (!snapshot.empty) {
+        const remoteCats: Category[] = [];
+        snapshot.forEach((doc) => {
+          remoteCats.push(doc.data() as Category);
+        });
+        setCategories(remoteCats);
+        saveCategories(remoteCats);
+      }
+    }, (err) => {
+      console.warn("Firestore categories real-time sync failed:", err);
+    });
+
+    // Dynamic real-time menuItems collection listener
+    const unsubItems = onSnapshot(collection(db, "menuItems"), (snapshot) => {
+      if (!snapshot.empty) {
+        const remoteItems: MenuItem[] = [];
+        snapshot.forEach((doc) => {
+          remoteItems.push(doc.data() as MenuItem);
+        });
+        setMenuItems(remoteItems);
+        saveMenuItems(remoteItems);
+      }
+    }, (err) => {
+      console.warn("Firestore menuItems real-time sync failed:", err);
+    });
+
+    // Dynamic real-time settings document listener
+    const unsubSettings = onSnapshot(doc(db, "settings", "restaurant_config"), (snapshot) => {
+      if (snapshot.exists()) {
+        const remoteSettings = snapshot.data() as RestaurantSettings;
+        setSettings(remoteSettings);
+        saveRestaurantSettings(remoteSettings);
+      }
+    }, (err) => {
+      console.warn("Firestore settings real-time sync failed:", err);
+    });
+
+    return () => {
+      unsubCats();
+      unsubItems();
+      unsubSettings();
+    };
+  }, []);
+
   // Handle first-visit language confirmation
   const handleSelectFirstVisitLanguage = (lang: LanguageCode) => {
     setCurrentLang(lang);
@@ -84,22 +147,31 @@ export default function App() {
     setCurrentLang(lang);
   };
 
-  // Category persist helpers
+  // Category persist helpers with active Firebase syncing
   const handleSaveCategories = (updatedCats: Category[]) => {
     setCategories(updatedCats);
     saveCategories(updatedCats);
+    dbSyncCategories(updatedCats).catch((err) => {
+      console.error("Firebase sync categories error:", err);
+    });
   };
 
-  // Menu item persist helpers
+  // Menu item persist helpers with active Firebase syncing
   const handleSaveMenuItems = (updatedItems: MenuItem[]) => {
     setMenuItems(updatedItems);
     saveMenuItems(updatedItems);
+    dbSyncMenuItems(updatedItems).catch((err) => {
+      console.error("Firebase sync menuItems error:", err);
+    });
   };
 
-  // Restaurant details persist helpers
+  // Restaurant details persist helpers with active Firebase syncing
   const handleSaveSettings = (updatedSettings: RestaurantSettings) => {
     setSettings(updatedSettings);
     saveRestaurantSettings(updatedSettings);
+    dbSaveSettings(updatedSettings).catch((err) => {
+      console.error("Firebase sync settings error:", err);
+    });
   };
 
   const handleSwitchToAdminAttempt = () => {

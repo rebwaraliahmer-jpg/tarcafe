@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global safety net catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Category Rules
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update: if (
+        isValidId(categoryId) &&
+        request.resource.data.id == categoryId &&
+        request.resource.data.name_en is string && request.resource.data.name_en.size() <= 200 &&
+        request.resource.data.name_ar is string && request.resource.data.name_ar.size() <= 200 &&
+        request.resource.data.name_ku is string && request.resource.data.name_ku.size() <= 200 &&
+        (!('image' in request.resource.data) || (request.resource.data.image is string && request.resource.data.image.size() <= 2000))
+      );
+      allow delete: if isValidId(categoryId);
+    }
+
+    // Menu Item Rules
+    match /menuItems/{menuItemId} {
+      allow read: if true;
+      allow create, update: if (
+        isValidId(menuItemId) &&
+        request.resource.data.id == menuItemId &&
+        request.resource.data.category_id is string && request.resource.data.category_id.size() <= 100 &&
+        request.resource.data.title_en is string && request.resource.data.title_en.size() <= 250 &&
+        request.resource.data.title_ar is string && request.resource.data.title_ar.size() <= 250 &&
+        request.resource.data.title_ku is string && request.resource.data.title_ku.size() <= 250 &&
+        request.resource.data.description_en is string && request.resource.data.description_en.size() <= 1500 &&
+        request.resource.data.description_ar is string && request.resource.data.description_ar.size() <= 1500 &&
+        request.resource.data.description_ku is string && request.resource.data.description_ku.size() <= 1500 &&
+        request.resource.data.price is number && request.resource.data.price >= 0 &&
+        request.resource.data.image is string && request.resource.data.image.size() <= 2000 &&
+        request.resource.data.available is bool
+      );
+      allow delete: if isValidId(menuItemId);
+    }
+
+    // Settings Rules
+    match /settings/{settingsId} {
+      allow read: if true;
+      allow create, update: if (
+        isValidId(settingsId) &&
+        request.resource.data.restaurant_name_en is string && request.resource.data.restaurant_name_en.size() <= 300 &&
+        request.resource.data.restaurant_name_ar is string && request.resource.data.restaurant_name_ar.size() <= 300 &&
+        request.resource.data.restaurant_name_ku is string && request.resource.data.restaurant_name_ku.size() <= 300 &&
+        request.resource.data.description_en is string && request.resource.data.description_en.size() <= 2000 &&
+        request.resource.data.description_ar is string && request.resource.data.description_ar.size() <= 2000 &&
+        request.resource.data.description_ku is string && request.resource.data.description_ku.size() <= 2000 &&
+        request.resource.data.address_en is string && request.resource.data.address_en.size() <= 1000 &&
+        request.resource.data.address_ar is string && request.resource.data.address_ar.size() <= 1000 &&
+        request.resource.data.address_ku is string && request.resource.data.address_ku.size() <= 1000 &&
+        (!('admin_password' in request.resource.data) || (request.resource.data.admin_password is string && request.resource.data.admin_password.size() <= 100))
+      );
+    }
+  }
+}

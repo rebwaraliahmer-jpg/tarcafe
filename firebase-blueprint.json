@@ -1,0 +1,144 @@
+{
+  "entities": {
+    "category": {
+      "title": "Category",
+      "description": "A food or drink category in the restaurant menu",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name_en": {
+          "type": "string"
+        },
+        "name_ar": {
+          "type": "string"
+        },
+        "name_ku": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name_en",
+        "name_ar",
+        "name_ku"
+      ]
+    },
+    "menuItem": {
+      "title": "MenuItem",
+      "description": "An individual menu item with prices, titles, descriptions in multiple languages",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "category_id": {
+          "type": "string"
+        },
+        "title_en": {
+          "type": "string"
+        },
+        "title_ar": {
+          "type": "string"
+        },
+        "title_ku": {
+          "type": "string"
+        },
+        "description_en": {
+          "type": "string"
+        },
+        "description_ar": {
+          "type": "string"
+        },
+        "description_ku": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        "image": {
+          "type": "string"
+        },
+        "available": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "category_id",
+        "title_en",
+        "title_ar",
+        "title_ku",
+        "price",
+        "image",
+        "available"
+      ]
+    },
+    "restaurantSettings": {
+      "title": "RestaurantSettings",
+      "description": "The general details of the restaurant including multi-lingual names, contacts, and admin settings",
+      "type": "object",
+      "properties": {
+        "restaurant_name_en": {
+          "type": "string"
+        },
+        "restaurant_name_ar": {
+          "type": "string"
+        },
+        "restaurant_name_ku": {
+          "type": "string"
+        },
+        "description_en": {
+          "type": "string"
+        },
+        "description_ar": {
+          "type": "string"
+        },
+        "description_ku": {
+          "type": "string"
+        },
+        "address_en": {
+          "type": "string"
+        },
+        "address_ar": {
+          "type": "string"
+        },
+        "address_ku": {
+          "type": "string"
+        },
+        "admin_password": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "restaurant_name_en",
+        "restaurant_name_ar",
+        "restaurant_name_ku",
+        "description_en",
+        "description_ar",
+        "description_ku",
+        "address_en",
+        "address_ar",
+        "address_ku"
+      ]
+    }
+  },
+  "firestore": {
+    "categories/{categoryId}": {
+      "schema": "category",
+      "description": "Menu categories collection"
+    },
+    "menuItems/{menuItemId}": {
+      "schema": "menuItem",
+      "description": "Individual menu items collection"
+    },
+    "settings/{settingsId}": {
+      "schema": "restaurantSettings",
+      "description": "Restaurant settings configuration"
+    }
+  }
+}
